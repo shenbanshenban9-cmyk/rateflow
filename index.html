@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f2ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111712" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="汇流：实时参考汇率换算，支持日度、周度、月度汇率走势图。">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="汇流">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+  <title>汇流 · 汇率换算</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="汇流首页">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 28 28" fill="none">
+            <path d="M6.5 18.5c3.3 0 4.9-2.1 7.2-6.8 2.2-4.4 4.3-5.7 7.8-5.7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M18.6 9.4h3.4V6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 22.5h15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>
+          </svg>
+        </span>
+        <span class="brand-copy">
+          <strong>汇流</strong>
+          <small>RATE FLOW</small>
+        </span>
+      </a>
+      <button class="icon-button" id="refreshButton" type="button" aria-label="刷新汇率" title="刷新汇率">
+        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 11a8 8 0 1 0-2.3 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M20 5v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="pageTitle">
+        <div class="eyebrow">
+          <span class="live-dot" id="liveDot" aria-hidden="true"></span>
+          <span id="syncLabel">正在同步汇率</span>
+          <span class="eyebrow-separator" aria-hidden="true">·</span>
+          <span id="headerDate">今天</span>
+        </div>
+        <h1 id="pageTitle">汇率，心中有数。</h1>
+        <p class="hero-copy">最新中间价，换算与走势，一屏掌握。</p>
+      </section>
+
+      <section class="card converter-card" aria-labelledby="converterTitle">
+        <div class="card-kicker">
+          <h2 id="converterTitle">汇率换算</h2>
+          <span id="rateDataDate">数据同步中</span>
+        </div>
+
+        <div class="money-block">
+          <label class="field-label" for="amountInput">我有</label>
+          <div class="money-line">
+            <div class="amount-field">
+              <span class="amount-symbol" id="baseSymbol" aria-hidden="true">$</span>
+              <input
+                id="amountInput"
+                class="amount-input"
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                value="100"
+                aria-label="换算金额"
+              >
+            </div>
+            <button class="currency-button" id="basePicker" type="button" aria-haspopup="dialog" aria-label="选择付款币种">
+              <span class="currency-flag" id="baseFlag">🇺🇸</span>
+              <span class="currency-code" id="baseCode">USD</span>
+              <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="swap-row" aria-hidden="false">
+          <span class="swap-rule"></span>
+          <button class="swap-button" id="swapButton" type="button" aria-label="交换付款和收款币种">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 4v13m0 0 3-3m-3 3-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 20V7m0 0 3 3m-3-3-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <span class="swap-rule"></span>
+        </div>
+
+        <div class="money-block money-block-result">
+          <span class="field-label" id="resultLabel">可兑换</span>
+          <div class="money-line">
+            <div class="result-field">
+              <output class="result-amount" id="resultAmount" aria-live="polite">—</output>
+              <span class="result-caption" id="resultCaption">人民币 · CNY</span>
+            </div>
+            <button class="currency-button" id="quotePicker" type="button" aria-haspopup="dialog" aria-label="选择收款币种">
+              <span class="currency-flag" id="quoteFlag">🇨🇳</span>
+              <span class="currency-code" id="quoteCode">CNY</span>
+              <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="rate-strip">
+          <div class="rate-lines">
+            <span class="unit-rate" id="unitRate">正在获取汇率…</span>
+            <span class="inverse-rate" id="inverseRate">—</span>
+          </div>
+          <span class="change-pill is-neutral" id="converterChange">—</span>
+        </div>
+
+        <div class="quick-pairs-block">
+          <span class="quick-label">快捷查看</span>
+          <div class="quick-pairs" id="quickPairs" role="group" aria-label="快捷货币对"></div>
+        </div>
+      </section>
+
+      <section class="card chart-card" aria-labelledby="chartTitle">
+        <div class="chart-heading">
+          <div class="chart-title-wrap">
+            <div class="chart-pair" id="chartTitle">
+              <span id="chartBase">USD</span>
+              <span class="pair-slash" aria-hidden="true">/</span>
+              <span id="chartQuote">CNY</span>
+            </div>
+            <p class="chart-subtitle">1 <span id="chartBaseInline">USD</span> 的中间价走势</p>
+          </div>
+          <div class="chart-current">
+            <span class="chart-current-rate" id="chartRate">—</span>
+            <span class="change-pill is-neutral" id="chartChange">—</span>
+          </div>
+        </div>
+
+        <div class="segmented" role="tablist" aria-label="选择走势图时间粒度">
+          <button class="segment is-active" type="button" role="tab" aria-selected="true" data-period="day">日度</button>
+          <button class="segment" type="button" role="tab" aria-selected="false" data-period="week">周度</button>
+          <button class="segment" type="button" role="tab" aria-selected="false" data-period="month">月度</button>
+          <span class="segment-thumb" aria-hidden="true"></span>
+        </div>
+
+        <div class="chart-stage">
+          <div class="chart-loading" id="chartLoading" aria-hidden="true">
+            <svg viewBox="0 0 360 224" preserveAspectRatio="none">
+              <path class="skeleton-line" d="M46 152 C 84 150, 102 96, 140 112 S 194 70, 236 92 S 300 44, 346 62" fill="none"/>
+            </svg>
+            <span class="visually-hidden">正在加载走势图</span>
+          </div>
+          <div class="chart-message" id="chartError" hidden>
+            <span class="message-icon" aria-hidden="true">!</span>
+            <p id="chartErrorMessage">走势暂时无法加载</p>
+            <button class="text-button" id="chartRetry" type="button">重新加载</button>
+          </div>
+          <div class="chart-message" id="chartEmpty" hidden>
+            <span class="message-icon is-calm" aria-hidden="true">≈</span>
+            <p>同一币种，汇率恒为 1</p>
+          </div>
+          <div class="chart-wrap" id="chartWrap" hidden>
+            <div class="chart-tooltip" id="chartTooltip" aria-hidden="true"></div>
+            <svg class="rate-chart" id="rateChart" viewBox="0 0 360 224" role="img" aria-label="汇率走势图"></svg>
+          </div>
+        </div>
+
+        <div class="chart-stats">
+          <div class="stat">
+            <span class="stat-label">区间涨跌</span>
+            <strong class="stat-value" id="rangeChange">—</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">最高</span>
+            <strong class="stat-value" id="rangeHigh">—</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">最低</span>
+            <strong class="stat-value" id="rangeLow">—</strong>
+          </div>
+        </div>
+
+        <div class="chart-caption">
+          <span id="rangeLabel">近 30 天 · 日度</span>
+          <span id="chartUpdated">等待更新</span>
+        </div>
+      </section>
+
+      <aside class="data-note" aria-label="数据说明">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="7.4" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M10 9v4.4M10 6.4v.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <p>数据来自 Frankfurter 官方参考汇率，仅供信息参考，不构成交易建议。最新价按服务商发布频率同步。</p>
+        <button class="text-button source-button" id="sourceButton" type="button">查看来源</button>
+      </aside>
+    </main>
+
+    <footer class="app-footer">
+      <span>汇流 · Rate Flow</span>
+      <span class="footer-separator" aria-hidden="true"></span>
+      <span id="footerStatus">正在连接汇率服务</span>
+    </footer>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <section
+    class="picker-sheet"
+    id="pickerSheet"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pickerTitle"
+    aria-hidden="true"
+  >
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <header class="sheet-header">
+      <div>
+        <p class="sheet-overline">CURRENCY</p>
+        <h2 id="pickerTitle">选择币种</h2>
+      </div>
+      <button class="icon-button sheet-close" id="pickerClose" type="button" aria-label="关闭币种选择">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+    <label class="search-field">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="8.5" cy="8.5" r="5.3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="m12.5 12.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input id="pickerSearch" type="search" placeholder="搜索币种或代码" autocomplete="off" spellcheck="false" aria-label="搜索币种">
+    </label>
+    <div class="currency-list" id="currencyList"></div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <noscript>
+    <div class="noscript">汇流需要启用 JavaScript 才能获取实时汇率。</div>
+  </noscript>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
